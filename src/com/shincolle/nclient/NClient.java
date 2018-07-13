@@ -3,14 +3,14 @@ package com.shincolle.nclient;
 import java.util.UUID;
 
 /**
- * NClient
+ * NClient Main Handler
  * */
 public final class NClient {
 	
 	/**
-	 * Launch nclient with given uuid
+	 * Launch a nclient safely, false means launch faild, if launch succeed, it will block current thread and return true in the end
 	 * */
-	public NClient(UUID uuid) {
-		throw new IllegalArgumentException(uuid.toString()); //TODO
+	public static final boolean launch(UUID uuid) {
+		return false;
 	}
 }
