@@ -3,9 +3,6 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
-import java.util.UUID;
-
-import com.shincolle.nclient.NClient;
 
 /**
  * ShinColle Starter
@@ -27,7 +24,7 @@ public final class SC$Starter {
 					return SC$CodeRuler.codefix(classfileBuffer, className);
 				} catch(Throwable e) {
 					e.printStackTrace();
-					System.exit(0);
+					SC$Starter.exit(0);
 				}
 				
 				return null;
@@ -46,14 +43,24 @@ public final class SC$Starter {
 	}
 	
 	/**
-	 * Launch a nclient safely, false means launch faild
+	 * Shutdown
 	 * */
-	public static final boolean safeLaunch(UUID uuid) {
+	public static final void exit(int status) {
 		try {
-			new NClient(uuid);
-			return true;
+			try {
+				Class.forName("net.minecraft.client.Minecraft").getMethod("shutdownMinecraftApplet").invoke(null);
+			} catch(Throwable e) {}
+			
+			System.exit(status);
 		} catch(Throwable e) {
-			return false;
+			try {
+				Method shutdown = Class.forName("java.lang.Shutdown").getDeclaredMethod("exit", int.class);
+				shutdown.setAccessible(true);
+				shutdown.invoke(null, status);
+			} catch(Throwable ie) {
+				ie.addSuppressed(e);
+				throw new RuntimeException("No idea!", ie);
+			}
 		}
 	}
 }
