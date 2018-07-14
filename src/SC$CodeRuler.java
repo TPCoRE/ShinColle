@@ -66,7 +66,7 @@ final class SC$CodeRuler {
 			ns.add(new InsnNode(Opcodes.DUP));
 			ns.add(new TypeInsnNode(Opcodes.NEW, "java/io/File"));
 			ns.add(new InsnNode(Opcodes.DUP));
-			ns.add(new LdcInsnNode("Z:\\LocalCodes\\MCP1.10\\$shincolle\\Master\\src\\"));
+			ns.add(new LdcInsnNode(SC$Starter.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
 			ns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/io/File", "<init>", "(Ljava/lang/String;)V"));
 			ns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/client/resources/FolderResourcePack", "<init>", "(Ljava/io/File;)V"));
 			ns.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, "java/util/List", "add", "(Ljava/lang/Object;)Z"));
