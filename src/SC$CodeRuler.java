@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.Iterator;
 
 import org.objectweb.asm.ClassReader;
@@ -57,16 +58,17 @@ final class SC$CodeRuler {
 			
 			//check&prepare mn1
 			if(mn1 == null) throw new NoSuchMethodError("net.minecraft.client.Minecraft.startGame()V wasn't be Found!");
+			String str0 = SC$Starter.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 			ns = new InsnList();
 			
 			//coding resourcepack injecter(为steve client注册贴图)
 			ns.add(new VarInsnNode(Opcodes.ALOAD, 0));
 			ns.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/Minecraft", "defaultResourcePacks", "Ljava/util/List;"));
-			ns.add(new TypeInsnNode(Opcodes.NEW, "net/minecraft/client/resources/FolderResourcePack"));
+			ns.add(new TypeInsnNode(Opcodes.NEW, new File(str0).isDirectory() ? "net/minecraft/client/resources/FolderResourcePack" : "net/minecraft/client/resources/FileResourcePack"));
 			ns.add(new InsnNode(Opcodes.DUP));
 			ns.add(new TypeInsnNode(Opcodes.NEW, "java/io/File"));
 			ns.add(new InsnNode(Opcodes.DUP));
-			ns.add(new LdcInsnNode(SC$Starter.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
+			ns.add(new LdcInsnNode(str0));
 			ns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/io/File", "<init>", "(Ljava/lang/String;)V"));
 			ns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/client/resources/FolderResourcePack", "<init>", "(Ljava/io/File;)V"));
 			ns.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, "java/util/List", "add", "(Ljava/lang/Object;)Z"));
@@ -74,6 +76,27 @@ final class SC$CodeRuler {
 			
 			//inject mn1
 			mn1.instructions.insert(ns);
+			break;
+		case "net/minecraft/client/renderer/RenderItem": //为注册的Item添加贴图(一个物品需要在不同的轮子里手动注册三次，Item轮子，材质包轮子(一个MOD一般只需一次)，RenderItem轮子)
+			cn = SC$CodeRuler.read(classbuf);
+			mn0 = SC$CodeRuler.find("registerItems", "()V", cn.methods.iterator());
+			
+			//check&prepare
+			if(mn0 == null) throw new NoSuchMethodError("net.minecraft.client.renderer.RenderItem.registerItems()V wasn't be Found!");
+			ns = new InsnList();
+			
+			//coding, register two item, 多核金属, 深渊金属
+			ns.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			ns.add(new InsnNode(Opcodes.DUP));
+			ns.add(new FieldInsnNode(Opcodes.GETSTATIC, "com/shincolle/nserver/Blocks", "POLYMETAL", "Lnet/minecraft/block/Block;"));
+			ns.add(new LdcInsnNode("shincolle:polymetal"));
+			ns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/RenderItem", "registerBlock", "(Lnet/minecraft/block/Block;Ljava/lang/String;)V"));
+			ns.add(new FieldInsnNode(Opcodes.GETSTATIC, "com/shincolle/nserver/Blocks", "ABYSSMETAL", "Lnet/minecraft/block/Block;"));
+			ns.add(new LdcInsnNode("shincolle:abyssmetal"));
+			ns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/RenderItem", "registerBlock", "(Lnet/minecraft/block/Block;Ljava/lang/String;)V"));
+			
+			//inject
+			mn0.instructions.insert(ns);
 			break;
 		case "net/minecraft/item/Item": //next
 		case "net/minecraft/block/Block": //register 多核金属, 深渊金属
@@ -83,7 +106,7 @@ final class SC$CodeRuler {
 			//check&prepare
 			boolean flag = mn0 == null;
 			if(flag) mn0 = SC$CodeRuler.find("registerItems", "()V", cn.methods.iterator());
-			if(mn0 == null) throw new NoSuchMethodError("registerBlocks()V & registerItems()V wasn't be Found!");
+			if(mn0 == null) throw new NoSuchMethodError("...Block.registerBlocks()V & ...Item.registerItems()V wasn't be Found!");
 			ns = new InsnList();
 			
 			//coding
